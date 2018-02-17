@@ -31,7 +31,7 @@ class commentsSpider(scrapy.Spider):
     def visit_page(self, response):
         for _, url in enumerate(self.start_urls):
             for _s, stock in self.stocks.head(1).iterrows():
-                for page in reversed(range(3, 4)):
+                for page in reversed(range(1, 4)):
                     # real_time = str(time.time()).replace('.', '')[0:-1]
                     u = url.format(symbol=stock.iloc[1], page=str(page))
                     request = scrapy.Request(u, meta={'cookiejar': response.meta['cookiejar'], 'symbol': stock.iloc[1], 'name': stock.iloc[0]})
