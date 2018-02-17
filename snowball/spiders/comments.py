@@ -2,11 +2,9 @@ import scrapy
 import os
 import random
 import pandas as pd
-import time
 import json
 from collections import OrderedDict
 from lxml import html
-from snowball.spiders.utils import agents
 from snowball.spiders.config import *
 from scrapy.cmdline import execute
 
@@ -15,6 +13,7 @@ class commentsSpider(scrapy.Spider):
     allowed_domains = ["xueqiu.com"]
     start_urls = [STOCK_COMMENTS_URL]
     stocks = None
+    download_delay = 5
 
     def start_requests(self):
 
@@ -23,19 +22,22 @@ class commentsSpider(scrapy.Spider):
 
         self.stocks = pd.read_csv(STOCK_LIST_FILE)
 
-        request = scrapy.Request(url="https://xueqiu.com", meta={"cookiejar": 1})
-        request.headers.setdefault('User-Agent', random.choice(agents))
+        request = scrapy.Request(url="https://xueqiu.com", meta={"cookiejar": 1, "handle_httpstatus_all": True})
+        request.headers.setdefault('Host', 'xueqiu.com')
+        request.headers.setdefault('Referer', 'https://xueqiu.com')
         request.callback = self.visit_page
         return [request]
 
     def visit_page(self, response):
         for _, url in enumerate(self.start_urls):
-            for _, stock in self.stocks.sample(1).iterrows():
-                for page in range(1, 101):
-                    real_time = str(time.time()).replace('.', '')[0:-1]
-                    u = url.format(symbol=stock.iloc[1], page=str(page), real_time=real_time)
+            for _s, stock in self.stocks.head(1).iterrows():
+                for page in reversed(range(3, 4)):
+                    # real_time = str(time.time()).replace('.', '')[0:-1]
+                    u = url.format(symbol=stock.iloc[1], page=str(page))
                     request = scrapy.Request(u, meta={'cookiejar': response.meta['cookiejar'], 'symbol': stock.iloc[1], 'name': stock.iloc[0]})
-                    request.headers.setdefault('User-Agent', random.choice(agents))
+                    request.headers.setdefault('Host', 'xueqiu.com')
+                    request.headers.setdefault('Referer', 'https://xueqiu.com/S/' + stock.iloc[1])
+                    request.headers.setdefault('X-Requested-With', 'XMLHttpRequest')
                     yield request
 
     def parse(self, response):
@@ -54,11 +56,8 @@ class commentsSpider(scrapy.Spider):
             stock_name.append(response.meta['name'])
             stock_code.append(response.meta['symbol'])
 
-            df = pd.DataFrame(OrderedDict({'stock_name': stock_name,
-                                       'stock_code': stock_code,
-                                       'comment': comment,
-                                       'user': user,
-                                       'title': title}))
+            df = pd.DataFrame(OrderedDict({'stock_name': stock_name, 'stock_code': stock_code,
+                                           'comment': comment, 'user': user, 'title': title}))
         df.to_csv(STOCK_COMMENTS_FILE, mode='a', header=False, index=False)
 
 

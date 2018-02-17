@@ -5,7 +5,6 @@ import random
 import pandas as pd
 import time
 from collections import OrderedDict
-from snowball.spiders.utils import agents
 from snowball.spiders.config import *
 from scrapy.cmdline import execute
 from scrapy.crawler import CrawlerProcess
