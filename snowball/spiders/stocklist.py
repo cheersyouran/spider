@@ -21,7 +21,6 @@ class stocklistsSpider(scrapy.Spider):
             os.remove(STOCK_LIST_FILE)
 
         request = scrapy.Request(url="https://xueqiu.com", meta={"cookiejar": 1})
-        request.headers.setdefault('User-Agent', random.choice(agents))
         request.callback = self.visit_page
         return [request]
 
@@ -31,7 +30,6 @@ class stocklistsSpider(scrapy.Spider):
                 real_time = str(time.time()).replace('.', '')[0:-1]
                 u = url.format(page=str(num), real_time=real_time)
                 request = scrapy.Request(u, meta={'cookiejar': response.meta['cookiejar']})
-                request.headers.setdefault('User-Agent', random.choice(agents))
                 yield request
 
     def parse(self, response):

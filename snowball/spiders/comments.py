@@ -13,7 +13,7 @@ class commentsSpider(scrapy.Spider):
     allowed_domains = ["xueqiu.com"]
     start_urls = [STOCK_COMMENTS_URL]
     stocks = None
-    download_delay = 5
+    download_delay = 8
 
     def start_requests(self):
 
@@ -31,11 +31,12 @@ class commentsSpider(scrapy.Spider):
     def visit_page(self, response):
         for _, url in enumerate(self.start_urls):
             for _s, stock in self.stocks.head(1).iterrows():
-                for page in reversed(range(1, 4)):
+                for page in reversed(range(1, 10)):
                     # real_time = str(time.time()).replace('.', '')[0:-1]
                     u = url.format(symbol=stock.iloc[1], page=str(page))
                     request = scrapy.Request(u, meta={'cookiejar': response.meta['cookiejar'], 'symbol': stock.iloc[1], 'name': stock.iloc[0]})
                     request.headers.setdefault('Host', 'xueqiu.com')
+                    request.headers.setdefault('Upgrade-Insecure-Requests', '1')
                     request.headers.setdefault('Referer', 'https://xueqiu.com/S/' + stock.iloc[1])
                     request.headers.setdefault('X-Requested-With', 'XMLHttpRequest')
                     yield request

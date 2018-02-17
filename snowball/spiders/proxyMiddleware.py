@@ -12,7 +12,7 @@ class ProxyMiddleware(object):
     ]
     def process_request(self, request, spider):
         ip = random.choice(self.proxy_list)
-        request.meta['proxy'] = ip
+        # request.meta['proxy'] = ip
 
     def process_response(self, request, response, spider):
         return response
