@@ -1,6 +1,5 @@
 import scrapy
 import os
-import random
 import pandas as pd
 import json
 from collections import OrderedDict
@@ -45,7 +44,7 @@ class commentsSpider(scrapy.Spider):
         print('start parsing...')
         stocks_comment = json.loads(response.text)['list']
         # page = json.loads(response.text)['maxPage']
-        comment, user_id, user, title, comment_id, stock_name, stock_code = [], [], [], [], [], [], []
+        comment, user_id, user, title, comment_id, stock_name, stock_code, time = [], [], [], [], [], [], [], []
         for stork in stocks_comment:
             text = stork.get('text').strip()
             selector = html.fromstring(text)
@@ -56,9 +55,9 @@ class commentsSpider(scrapy.Spider):
             comment_id.append(stork.get('id'))
             stock_name.append(response.meta['name'])
             stock_code.append(response.meta['symbol'])
-
+            time.append(stork.get('timeBefore'))
             df = pd.DataFrame(OrderedDict({'stock_name': stock_name, 'stock_code': stock_code,
-                                           'comment': comment, 'user': user, 'title': title}))
+                                           'time': time, 'user_id': user_id, 'title': title, 'comment': comment}))
         df.to_csv(STOCK_COMMENTS_FILE, mode='a', header=False, index=False)
 
 
